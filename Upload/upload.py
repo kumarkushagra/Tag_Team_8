@@ -1,3 +1,16 @@
+
+'''
+Working of this function
+
+1. Read the CSV of the file and store UHIDs in an array (uhids that are ready to upload and belog to bleed class)
+2. Fetch the last numbers from mapping.csv
+3. Create a new Directory named "Batch<x>" (x is fetched from last numbers)
+4. Create an array containing paths to copy from database to Batch directory
+5. Copy the studies from database to Batch directory 
+6. then upload entire batch (reffer Upload_Batch()function )
+
+'''
+
 # import requests
 import os
 import pandas as pd
@@ -6,6 +19,7 @@ import requests
 import csv
 import datetime
 
+from .check_mapping import check
 from .Fetch_UHID import return_uhid_array
 from .Generate_Full_dir_Path import join_paths
 from .Generate_Batches_Dir import create_subdirectory
@@ -25,6 +39,10 @@ from .UP_new_study_from_array import *
 def log_message(log_file_path,message):
     with open(log_file_path, 'a') as file:
         file.write(message + '\n')
+
+# IMPORTANT Modification required
+# For a given batch_size "n" make sure that exactly "n" files are copied from dataset into "Batch" directory
+# i.e. combine return_uhid_array() and copy_directories_to_Batch_dir() function
 
 
 def Upload(unzip_dir,anonymize_flag, csv_file_path,batch_size,log_filepath):
@@ -54,13 +72,10 @@ def Upload(unzip_dir,anonymize_flag, csv_file_path,batch_size,log_filepath):
         }'''
 
     # Calling function: "latest_batch_number()" will return an array containing latest Numbers of all the names
-    
-    # CHANGES MADE HERE
+
     last_number = latest_number()
     print(last_number)
-    
-    # CHANGES MADE HERE
-    # batch_Name = "Batch" + str(batch_number+1)
+  
     batch_Name = "Batch" + str(last_number[0]+1)
         
     # Reocrd in log File
@@ -95,6 +110,14 @@ def Upload(unzip_dir,anonymize_flag, csv_file_path,batch_size,log_filepath):
     msg = "---Batch Creation complete---"
     log_message(log_filepath,msg)
 
+
+    # Check mapping.csv for duplicacy in either UHID or Name
+    if check(): 
+        print("Duplicacy FOUND in mapping.csv")
+        print("BREAKING OUT, FIX the error")
+        msg = f"\nduplicacy found, BREAKING OUT"
+        log_message(log_filepath,msg)
+        break
 
     # Uploading Entire Batch
     Upload_Batch(log_filepath, target_dir, anonymize_flag, csv_file_path, batch_Name, last_number) # last_number is an array containing all numbers    
