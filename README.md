@@ -4,7 +4,7 @@
 This repository contains source code for a tool to interact with Orthanc PACS, allowing for upload, download, delete, Transfer from PACS-to-PACS and SCP (under development) operations. The Orthanc server URL is set to `http://localhost:8042`.
 
 ## Requirements
-1. Orthanc server must be hosted.
+1. Orthanc server must be hosted. (version 1.10.0 or later) 
 2. Python must be installed. (version 3.12.3 )
 3. All libraries specified in `requirements.txt` must be installed in a virtual environment.
 
