@@ -51,8 +51,9 @@ def return_uhid_array(log_filepath,csv_file_path: str, num_uhid: int, column_nam
     
     # Select the desired number of values from the specified ID column
     idnumbers = filtered_df[id_column_name].head(num_uhid).tolist()
+    idnumbers_str = [str(num) for num in idnumbers]
     
-    return idnumbers
+    return idnumbers_str
 
 
 if __name__ == "__main__":
