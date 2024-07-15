@@ -48,13 +48,14 @@ def Upload_Batch(log_filepath, batch_dir_path, anonymize_flag, User_CSV_path, ba
         # Store full path of all DCM instances in an array
         series_array = generate_all_series_path(batch_dir_path, uhid)
         # Reocrd in log File
-        msg = f"Series in UHID: >--{uhid}--< is {series_array}"
+        msg = f"Old Studies: \n {old_studies}"
         log_message(log_filepath,msg)
 
         # iterate over each series
         for series in series_array:
             # will upload each series for a given UHID
             upload_success=upload_dicom_files(log_filepath,ORTHANC_URL,series)
+            print(f"Succesfully Uplaoded all instances for UHID: {uhid} INSTANCE UPLOAD STATUS:  {upload_success}")
             if not upload_success:
                 print(f"Failed to upload series for UHID: {uhid}. Skipping to next UHID.")
                 # Reocrd in log File
@@ -82,8 +83,8 @@ def Upload_Batch(log_filepath, batch_dir_path, anonymize_flag, User_CSV_path, ba
 
         if anonymize_flag==True:
         
+            print(uploaded_studyID[0])
             anonymize_result = anonymize_study(log_filepath,ORTHANC_URL, str(uploaded_studyID[0]))
-            
             anonymized_studies = requests.get(f"{ORTHANC_URL}/studies").json()
             # Delete Orignal_study
             delete_studies(uploaded_studyID)
@@ -106,10 +107,20 @@ def Upload_Batch(log_filepath, batch_dir_path, anonymize_flag, User_CSV_path, ba
             construct new name on that basis
 
             """
-
+            print("*********************************************")
+            print(str(uhid),type(uhid))
+            print(f"CSV FILE PATH: {User_CSV_path}")
+            print(len(df))
+            
+            print(df['Patient ID (UHID)'].dtype)
+            # print(df[df['Patient ID (UHID)'].str.equals(str(uhid))])
+            print(df[df['Patient ID (UHID)'] == int(uhid)]['Bleed Sub-Category'])
+            print(df[df['Patient ID (UHID)'] == int(uhid)]['Bleed Sub-Category'].values)
             # Fetch the Abnormality 
-            major_abnormality = df[df['Patient ID (UHID)'] == uhid]['Major abnormality'].values[0].strip()
- 
+            major_abnormality = df[df['Patient ID (UHID)'] == int(uhid)]['Bleed Sub-Category'].values
+            
+            print("*********************************************")
+ 	    
             if major_abnormality == "Normal":
                 last_number[1] += 1
                 new_name = "Normal_" + str(last_number[1])
@@ -162,7 +173,7 @@ def Upload_Batch(log_filepath, batch_dir_path, anonymize_flag, User_CSV_path, ba
         # Update the Master CSV
         # change value to "uploaded" == 1 
         ################### FOR TESTING, i have set upload == 0, before deployment, change it to i########
-        update_csv(User_CSV_path,  uhid, 0)
+        update_csv(User_CSV_path,  uhid, 1)
         # Reocrd in log File
         msg =f"Updated Final.csv"
         log_message(log_filepath,msg)
